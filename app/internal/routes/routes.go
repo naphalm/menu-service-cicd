@@ -5,6 +5,19 @@ import (
 	"github.com/naphalm/menu-service-cicd/app/internal/handlers"
 )
 
-func RegisterMenuRoutes(r *gin.Engine) {
-	r.GET("/menu", handlers.GetMenu)
+func SetupRouter() *gin.Engine {
+	r := gin.Default()
+
+	r.GET("/health", handlers.Health)
+
+	menu := r.Group("/menu")
+	{
+		menu.GET("", handlers.GetAllMenuItems)
+		menu.GET("/:id", handlers.GetMenuItem)
+		menu.POST("", handlers.CreateMenuItem)
+		menu.PUT("/:id", handlers.UpdateMenuItem)
+		menu.DELETE("/:id", handlers.DeleteMenuItem)
+	}
+
+	return r
 }
