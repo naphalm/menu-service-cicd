@@ -1,4 +1,4 @@
-module github.com/naphalm/menu-service-cicd
+module github.com/naphalm/menu-service-cicd/app
 
 go 1.22
 

@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/naphalm/menu-service-cicd/internal/db"
-	"github.com/naphalm/menu-service-cicd/internal/routes"
+	"github.com/naphalm/menu-service-cicd/app/internal/db"
+	"github.com/naphalm/menu-service-cicd/app/internal/routes"
 )
 
 func main() {

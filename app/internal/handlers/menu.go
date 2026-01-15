@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/naphalm/menu-service-cicd/internal/db"
+	"github.com/naphalm/menu-service-cicd/app/internal/db"
 )
 
 func GetMenu(c *gin.Context) {
