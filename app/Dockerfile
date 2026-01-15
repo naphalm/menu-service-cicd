@@ -1,18 +1,39 @@
-FROM golang:1.12-alpine AS builder
+# =========================
+# Builder Stage
+# =========================
+FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
-COPY go.mod go.sum ./
+
+# copy go mod files
+COPY app/go.mod app/go.sum ./
 RUN go mod download
-COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o menu-service
+# copy application source
+COPY app/ .
 
-FROM alpine:3.18
+# build binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o menu-service
+
+# =========================
+# Runtime Stage
+# =========================
+FROM alpine:3.19
+
 WORKDIR /app
 
-COPY --from=builder /app/menu-service .
-COPY ../scripts/migrate.sh /app/migrate.sh
-RUN chmox +x /app/migrate.sh
+# install Postgres client and certificates
+RUN apk add --no-cache postgresql-client ca-certificates bash
 
-EXPOSE 3001
-ENTRYPOINT [ "/app/menu-service" ]
+# copy binary
+COPY --from=builder /app/menu-service .
+
+# copy migration script
+COPY scripts/migrate.sh ./scripts/migrate.sh
+RUN chmod +x ./scripts/migrate.sh
+
+# expose port
+EXPOSE 3000
+
+# run migrations and then the Go service
+ENTRYPOINT ["sh", "-c", "./scripts/migrate.sh && ./menu-service"]

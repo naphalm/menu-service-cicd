@@ -2,29 +2,42 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"errors"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
 
-func Init() {
+func Init() error {
 	conn := os.Getenv("DATABASE_URL")
 	if conn == "" {
-		log.Fatal("DATABASE_URL not set")
+		return errors.New("DATABASE_URL not set")
 	}
 
 	var err error
 	DB, err = sql.Open("postgres", conn)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	// Connection pool tuning (VERY IMPORTANT in k8s)
+	DB.SetMaxOpenConns(10)
+	DB.SetMaxIdleConns(5)
+	DB.SetConnMaxLifetime(30 * time.Minute)
 
 	if err = DB.Ping(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	log.Println("Connected to Postgres")
+	return nil
+}
+
+func Close() error {
+	if DB != nil {
+		return DB.Close()
+	}
+	return nil
 }
