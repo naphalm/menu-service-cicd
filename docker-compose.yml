@@ -1,0 +1,34 @@
+menu-postgres:
+  image: postgres:16
+  container_name: menu-postgres
+  environment:
+    POSTGRES_USER: menuuser
+    POSTGRES_PASSWORD: menupass
+    POSTGRES_DB: menudb
+  ports:
+    - "5433:5432"
+  volumes:
+    - menu-pgdata:/var/lib/postgresql/data
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U menuuser"]
+    interval: 5s
+    timeout: 5s
+    retries: 5
+
+menu-service:
+  build:
+    context: ./menu-service/app
+    dockerfile: Dockerfile
+  container_name: menu-service
+  depends_on:
+    menu-postgres:
+      condition: service_healthy
+  env_file:
+    - .env
+  ports:
+    - "3001:3001"
+  command: sh -c "/app/migrate.sh && /app/menu-service"
+  restart: unless-stopped
+
+volumes:
+  menu-pgdata:
